@@ -15,6 +15,7 @@ server.listen(port, function() {
 app.use(express.static(__dirname + '/public'));
 
 // users which are currently connected to the chat
+var onlineClients = {};
 var usernames = {};
 var numUsers = 0;
 
@@ -36,6 +37,7 @@ io.on('connection', function(socket) {
 		socket.username = username;
 		// add the client's username to the global list
 		usernames[username] = username;
+		onlineClients[username] = socket.id;
 		++numUsers;
 		addedUser = true;
 		socket.emit('login', {
@@ -76,5 +78,10 @@ io.on('connection', function(socket) {
 				numUsers: numUsers
 			});
 		}
+	});
+	// private message
+	socket.on('pm', function(to, message) {
+    	var id = onlineClients[to];
+    	io.sockets.socket(id).emit('updatechat', socket.username, message);
 	});
 });
