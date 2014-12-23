@@ -97,7 +97,7 @@ $(function() {
 			.css('color', getUsernameColor(data.username));
 		var $messageBodyDiv = $('<span class="messageBody">')
 			.text(data.message);
-
+			$messageBodyDiv.emoticonize(false);
 		var typingClass = data.typing ? 'typing' : '';
 		var $messageDiv = $('<li class="message"/>')
 			.data('username', data.username)
