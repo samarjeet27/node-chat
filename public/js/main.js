@@ -277,10 +277,7 @@ $(function() {
 		addpmOption('Community');
 		if (data.usernames != 'undefined') {
 			for (user in data.usernames) {
-				if (user == username)
-					addUser(user, true);
-				else
-					addUser(user);
+				addUser(user, user==username);
 			}
 		}
 	});
@@ -314,7 +311,6 @@ $(function() {
 	});
 
 	socket.on('pm', function(data){
-		console.log(data);
 		addChatMessage(data, null, true);
 	});
 });
