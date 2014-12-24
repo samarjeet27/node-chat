@@ -80,8 +80,14 @@ io.on('connection', function(socket) {
 		}
 	});
 	// private message
-	socket.on('pm', function(to, message) {
+	socket.on('pm', function(to,user, message) {
     	var id = onlineClients[to];
-    	io.sockets.socket(id).emit('updatechat', socket.username, message);
+    	console.log('pm :' + to);
+    	if(io.sockets.connected[id]){
+    		io.sockets.connected[id].emit('pm', {
+    				username:user,
+    				message: message
+    			});
+    	}
 	});
 });

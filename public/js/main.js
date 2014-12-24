@@ -35,6 +35,7 @@ $(function() {
 		}
 		var block = $('<li>', options);
 		$('.users').append(block);
+		addpmOption(nick);
 	}
 
 	function removeUser(nick) {
@@ -43,8 +44,29 @@ $(function() {
 			if (users[i].textContent == nick)
 				users[i].remove();
 		}
+		removepmOption(nick);
 	}
 
+	function addpmOption(name){
+		var elem = $('#pm_select');
+		var x = $('<option>').text(name);
+		elem.append(x);
+	}
+
+	function removepmOption(name){
+		e = $('#pm_select');
+		for (var i = 0; i < e.length; i++) {
+			if(e[i] == name)
+				e[i].remove();
+		}
+	}
+
+	function isSetPrivate(){
+		e = $('#pm_select');
+		if(e.val() != "Community")
+			return [true, e.val()];
+		return [false];
+	}
 	// Sets the client's username
 	function setUsername() {
 		username = cleanInput($usernameInput.val().trim());
@@ -67,12 +89,21 @@ $(function() {
 		// if there is a non-empty message and a socket connection
 		if (message && connected) {
 			$inputMessage.val('');
-			addChatMessage({
-				username: username,
-				message: message
-			});
-			// tell server to execute 'new message' and send along one parameter
-			socket.emit('new message', message);
+			x = isSetPrivate()
+			if(x[0]){
+				addChatMessage({
+					username:username,
+					message: message,
+				}, null, true);
+				socket.emit('pm',x[1],username, message);
+			} else {
+				addChatMessage({
+					username: username,
+					message: message
+				});
+				// tell server to execute 'new message' and send along one parameter
+				socket.emit('new message', message);
+			}
 		}
 	}
 
@@ -83,7 +114,7 @@ $(function() {
 	}
 
 	// Adds the visual chat message to the message list
-	function addChatMessage(data, options) {
+	function addChatMessage(data, options, _private) {
 		// Don't fade the message in if there is an 'X was typing'
 		var $typingMessages = getTypingMessages(data);
 		options = options || {};
@@ -91,9 +122,11 @@ $(function() {
 			options.fade = false;
 			$typingMessages.remove();
 		}
-
+		var _user = data.username;
+		if(_private)
+			_user += "(Private)";
 		var $usernameDiv = $('<span class="username"/>')
-			.text(data.username)
+			.text(_user)
 			.css('color', getUsernameColor(data.username));
 		var $messageBodyDiv = $('<span class="messageBody">')
 			.text(data.message);
@@ -241,6 +274,7 @@ $(function() {
 		log(message, {
 			prepend: true
 		});
+		addpmOption('Community');
 		if (data.usernames != 'undefined') {
 			for (user in data.usernames) {
 				if (user == username)
@@ -277,5 +311,10 @@ $(function() {
 	// Whenever the server emits 'stop typing', kill the typing message
 	socket.on('stop typing', function(data) {
 		removeChatTyping(data);
+	});
+
+	socket.on('pm', function(data){
+		console.log(data);
+		addChatMessage(data, null, true);
 	});
 });
