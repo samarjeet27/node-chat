@@ -1,6 +1,6 @@
 {
-    "name": "code-in-chat",
-    "version": "0.0.0",
+    "name": "node-chat",
+    "version": "0.0.1",
     "private": true,
     "description": "Chat app using nodejs and socket.io",
     "main": "index.js",
